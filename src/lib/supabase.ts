@@ -1,10 +1,16 @@
 import { createClient } from "@supabase/supabase-js";
 
-// Fall back to harmless placeholders so the module can load during build /
-// prerender when env vars aren't present. Real values are required at runtime
-// (set them in .env.local — see SETUP.md).
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "https://placeholder.supabase.co";
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "placeholder-anon-key";
+// The Supabase URL and anon key are public client credentials (they ship in
+// every browser bundle by design — RLS, not secrecy, is the security boundary).
+// Env vars win; these baked defaults point at the CVMPOUND project so the app
+// works when deployed without extra config. To use a different backend, set
+// NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY (see SETUP.md).
+const DEFAULT_SUPABASE_URL = "https://iakxrkrogjjugugmznpn.supabase.co";
+const DEFAULT_SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlha3hya3JvZ2pqdWd1Z216bnBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwMzk0NzAsImV4cCI6MjA5NzYxNTQ3MH0.X9BqTJbT2UnJf9NvW07FoerxUoyOcuxI-1JejlSlOXk";
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? DEFAULT_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? DEFAULT_SUPABASE_ANON_KEY;
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
