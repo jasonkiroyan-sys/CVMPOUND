@@ -1,0 +1,68 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --cmp-lime: #c8ff2f;
+  --cmp-accent: #ff5c2b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #0a0d12;
+  color: #e2e8f0;
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #11151c;
+}
+::-webkit-scrollbar-thumb {
+  background: #1c232e;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2a3340;
+}
+
+/* Category badges */
+.badge {
+  @apply inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold uppercase tracking-wide;
+}
+.badge-chest     { @apply bg-rose-500/15 text-rose-300 border border-rose-500/25; }
+.badge-back      { @apply bg-blue-500/15 text-blue-300 border border-blue-500/25; }
+.badge-legs      { @apply bg-amber-500/15 text-amber-300 border border-amber-500/25; }
+.badge-shoulders { @apply bg-violet-500/15 text-violet-300 border border-violet-500/25; }
+.badge-arms      { @apply bg-emerald-500/15 text-emerald-300 border border-emerald-500/25; }
+.badge-core      { @apply bg-orange-500/15 text-orange-300 border border-orange-500/25; }
+.badge-cardio    { @apply bg-cyan-500/15 text-cyan-300 border border-cyan-500/25; }
+.badge-full_body { @apply bg-lime-500/15 text-lime-300 border border-lime-500/25; }
+
+/* Card */
+.card {
+  @apply bg-surface-card border border-surface-border rounded-xl p-5;
+}
+
+/* Primary button */
+.btn-primary {
+  @apply bg-cmp-lime text-black font-bold rounded-lg px-4 py-2.5 transition-all hover:bg-cmp-lime-light disabled:opacity-40 disabled:cursor-not-allowed;
+}
+.btn-ghost {
+  @apply bg-surface-card border border-surface-border text-slate-300 font-medium rounded-lg px-4 py-2.5 transition-all hover:border-cmp-lime hover:text-white;
+}
+
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.count-up { animation: countUp 0.5s ease-out forwards; }
