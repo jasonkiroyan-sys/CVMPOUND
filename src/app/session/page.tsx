@@ -60,6 +60,17 @@ export default function SessionPage() {
     return m && s ? `${m}m ${s}s` : m ? `${m}m` : `${s}s`;
   };
 
+  // Total time logged on cardio machines this session.
+  const totalCardioSeconds = sets.reduce((sum, s) => sum + (s.duration_seconds ?? 0), 0);
+  const fmtClock = (sec: number) => {
+    const h = Math.floor(sec / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    const s = sec % 60;
+    return h
+      ? `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`
+      : `${m}:${String(s).padStart(2, "0")}`;
+  };
+
   return (
     <AppShell>
       <TopBar
@@ -82,10 +93,11 @@ export default function SessionPage() {
 
         {session && (
           <>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <Stat label="Exercises" value={String(groups.length)} />
               <Stat label="Sets" value={String(sets.length)} />
               <Stat label="Volume" value={`${totalVolume.toLocaleString()}`} suffix="lb" />
+              <Stat label="Cardio time" value={fmtClock(totalCardioSeconds)} />
             </div>
 
             {groups.length === 0 && (
