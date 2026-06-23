@@ -45,8 +45,18 @@ export default function HistoryPage() {
   function sessionStats(sessionId: string) {
     const s = allSets.filter((x) => x.session_id === sessionId);
     const volume = s.reduce((sum, x) => sum + (x.weight ?? 0) * (x.reps ?? 0), 0);
-    return { sets: s.length, volume };
+    const cardioSeconds = s.reduce((sum, x) => sum + (x.duration_seconds ?? 0), 0);
+    return { sets: s.length, volume, cardioSeconds };
   }
+
+  const fmtClock = (sec: number) => {
+    const h = Math.floor(sec / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    const ss = sec % 60;
+    return h
+      ? `${h}:${String(m).padStart(2, "0")}:${String(ss).padStart(2, "0")}`
+      : `${m}:${String(ss).padStart(2, "0")}`;
+  };
 
   return (
     <AppShell>
@@ -87,7 +97,7 @@ export default function HistoryPage() {
           ) : (
             <div className="space-y-2">
               {completed.map((s) => {
-                const { sets, volume } = sessionStats(s.id);
+                const { sets, volume, cardioSeconds } = sessionStats(s.id);
                 return (
                   <div key={s.id} className="flex items-center gap-4 bg-surface-card border border-surface-border rounded-xl p-4">
                     <div className="flex-1">
@@ -102,6 +112,9 @@ export default function HistoryPage() {
                     <div className="text-right">
                       <div className="text-sm font-bold text-cmp-lime tabular-nums">{sets} sets</div>
                       <div className="text-xs text-slate-500 tabular-nums">{volume.toLocaleString()} lb vol</div>
+                      {cardioSeconds > 0 && (
+                        <div className="text-xs text-slate-500 tabular-nums">{fmtClock(cardioSeconds)} cardio</div>
+                      )}
                     </div>
                   </div>
                 );
