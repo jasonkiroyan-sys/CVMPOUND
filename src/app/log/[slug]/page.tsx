@@ -8,6 +8,7 @@ import SetLogger from "@/components/log/SetLogger";
 import {
   getEquipmentBySlug,
   getSetsForEquipment,
+  isCardio,
   type Equipment,
   type WorkoutSet,
 } from "@/lib/supabase";
@@ -32,18 +33,38 @@ export default function LogPage() {
     })();
   }, [slug]);
 
-  // Best set from prior history (heaviest weight, then most reps) as a starting point.
+  const cardio = equipment ? isCardio(equipment) : false;
+
+  // Sensible defaults from prior history: heaviest set (strength) or longest
+  // time (cardio), used to pre-fill the logger and show a "best so far" hint.
+  const heaviest = history.reduce<WorkoutSet | null>((best, s) => {
+    if (s.weight == null) return best;
+    if (!best || s.weight > (best.weight ?? 0)) return s;
+    return best;
+  }, null);
+  const longestSeconds = history.reduce(
+    (max, s) => (s.duration_seconds != null && s.duration_seconds > max ? s.duration_seconds : max),
+    0
+  );
   const recentBest = history.length
-    ? history.reduce((best, s) =>
-        s.weight > best.weight || (s.weight === best.weight && s.reps > best.reps) ? s : best
-      )
+    ? {
+        weight: heaviest?.weight ?? 45,
+        reps: heaviest?.reps ?? 8,
+        durationSeconds: longestSeconds,
+      }
     : null;
+
+  const fmtTime = (sec: number) => {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return m && s ? `${m}m ${s}s` : m ? `${m} min` : `${s}s`;
+  };
 
   return (
     <AppShell>
       <TopBar
         title={equipment?.name ?? "Log"}
-        subtitle={equipment ? "Log your weight, reps & sets" : undefined}
+        subtitle={equipment ? (cardio ? "Log how long you used the machine" : "Log your weight, reps & sets") : undefined}
         right={
           <Link href="/" className="p-2 rounded-lg bg-surface-card border border-surface-border text-slate-400 hover:text-white" aria-label="Back">
             <ArrowLeft size={15} />
@@ -71,17 +92,17 @@ export default function LogPage() {
               </div>
             )}
 
-            {recentBest && (
+            {recentBest && (cardio ? recentBest.durationSeconds > 0 : true) && (
               <div className="flex items-center gap-2 text-sm bg-surface-card border border-surface-border rounded-lg px-4 py-2.5 text-slate-300">
                 <TrendingUp size={15} className="text-cmp-lime" />
-                Best so far: <span className="font-semibold text-white">{recentBest.weight} lb × {recentBest.reps}</span>
+                {cardio ? "Longest so far:" : "Best so far:"}{" "}
+                <span className="font-semibold text-white">
+                  {cardio ? fmtTime(recentBest.durationSeconds) : `${recentBest.weight} lb × ${recentBest.reps}`}
+                </span>
               </div>
             )}
 
-            <SetLogger
-              equipment={equipment}
-              recentBest={recentBest ? { weight: recentBest.weight, reps: recentBest.reps } : null}
-            />
+            <SetLogger equipment={equipment} recentBest={recentBest} />
 
             <Link
               href="/session"

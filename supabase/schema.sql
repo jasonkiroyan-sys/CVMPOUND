@@ -40,9 +40,10 @@ create table if not exists workout_sets (
   session_id    uuid not null references workout_sessions (id) on delete cascade,
   equipment_id  uuid not null references equipment (id),
   set_number    int not null,
-  weight        numeric not null,
-  reps          int not null,
+  weight        numeric,                       -- null for cardio
+  reps          int,                           -- null for cardio
   rest_seconds  int,
+  duration_seconds int,                        -- cardio: time on the machine (strength: null)
   logged_at     timestamptz not null default now(),
   user_id       uuid
 );

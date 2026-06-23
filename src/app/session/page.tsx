@@ -52,7 +52,13 @@ export default function SessionPage() {
     if (!g) { g = { equipmentId: s.equipment_id, sets: [] }; groups.push(g); }
     g.sets.push(s);
   }
-  const totalVolume = sets.reduce((sum, s) => sum + s.weight * s.reps, 0);
+  const totalVolume = sets.reduce((sum, s) => sum + (s.weight ?? 0) * (s.reps ?? 0), 0);
+
+  const fmtDur = (sec: number) => {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return m && s ? `${m}m ${s}s` : m ? `${m}m` : `${s}s`;
+  };
 
   return (
     <AppShell>
@@ -97,7 +103,7 @@ export default function SessionPage() {
                   <div className="flex flex-wrap gap-1.5">
                     {g.sets.map((s) => (
                       <span key={s.id} className="text-xs bg-surface border border-surface-border rounded-md px-2 py-1 text-slate-300 tabular-nums">
-                        {s.weight}×{s.reps}
+                        {s.duration_seconds != null ? fmtDur(s.duration_seconds) : `${s.weight}×${s.reps}`}
                       </span>
                     ))}
                   </div>

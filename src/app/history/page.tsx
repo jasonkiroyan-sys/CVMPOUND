@@ -8,6 +8,7 @@ import {
   getSessionHistory,
   getEquipment,
   supabase,
+  isCardio,
   type WorkoutSession,
   type WorkoutSet,
   type Equipment,
@@ -43,7 +44,7 @@ export default function HistoryPage() {
 
   function sessionStats(sessionId: string) {
     const s = allSets.filter((x) => x.session_id === sessionId);
-    const volume = s.reduce((sum, x) => sum + x.weight * x.reps, 0);
+    const volume = s.reduce((sum, x) => sum + (x.weight ?? 0) * (x.reps ?? 0), 0);
     return { sets: s.length, volume };
   }
 
@@ -66,7 +67,10 @@ export default function HistoryPage() {
                   <Link href={`/log/${e.slug}`} className="text-sm font-semibold text-white hover:text-cmp-lime">
                     {e.name}
                   </Link>
-                  <ProgressChart sets={allSets.filter((s) => s.equipment_id === e.id)} />
+                  <ProgressChart
+                    sets={allSets.filter((s) => s.equipment_id === e.id)}
+                    mode={isCardio(e) ? "duration" : "weight"}
+                  />
                 </div>
               ))}
             </div>

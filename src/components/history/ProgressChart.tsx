@@ -11,21 +11,38 @@ import {
 import { format } from "date-fns";
 import type { WorkoutSet } from "@/lib/supabase";
 
-/** Plots the top-set weight per day for one piece of equipment. */
-export default function ProgressChart({ sets }: { sets: WorkoutSet[] }) {
+/**
+ * Plots progress per day for one piece of equipment: the top-set weight for
+ * strength machines, or the longest time (minutes) for cardio machines.
+ */
+export default function ProgressChart({
+  sets,
+  mode = "weight",
+}: {
+  sets: WorkoutSet[];
+  mode?: "weight" | "duration";
+}) {
   const byDay = new Map<string, number>();
   for (const s of sets) {
     const day = s.logged_at.slice(0, 10);
-    byDay.set(day, Math.max(byDay.get(day) ?? 0, s.weight));
+    const value = mode === "duration" ? (s.duration_seconds ?? 0) / 60 : s.weight ?? 0;
+    byDay.set(day, Math.max(byDay.get(day) ?? 0, value));
   }
   const data = Array.from(byDay.entries())
     .sort((a, b) => a[0].localeCompare(b[0]))
-    .map(([day, weight]) => ({ day, label: format(new Date(day), "MMM d"), weight }));
+    .map(([day, value]) => ({
+      day,
+      label: format(new Date(day), "MMM d"),
+      value: mode === "duration" ? Math.round(value * 10) / 10 : value,
+    }));
+
+  const unit = mode === "duration" ? "min" : "lb";
+  const seriesLabel = mode === "duration" ? "Longest" : "Top set";
 
   if (data.length < 2) {
     return (
       <p className="text-xs text-slate-600 py-4 text-center">
-        Log this exercise on at least two days to see a progress trend.
+        Log this {mode === "duration" ? "machine" : "exercise"} on at least two days to see a progress trend.
       </p>
     );
   }
@@ -45,11 +62,11 @@ export default function ProgressChart({ sets }: { sets: WorkoutSet[] }) {
               fontSize: 12,
             }}
             labelStyle={{ color: "#e2e8f0" }}
-            formatter={(v: number) => [`${v} lb`, "Top set"]}
+            formatter={(v: number) => [`${v} ${unit}`, seriesLabel]}
           />
           <Line
             type="monotone"
-            dataKey="weight"
+            dataKey="value"
             stroke="#c8ff2f"
             strokeWidth={2}
             dot={{ r: 3, fill: "#c8ff2f" }}

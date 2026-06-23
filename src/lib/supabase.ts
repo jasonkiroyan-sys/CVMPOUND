@@ -72,6 +72,11 @@ export interface Equipment {
   created_at: string;
 }
 
+/** Cardio equipment is logged by duration (time on the machine), not weight/reps. */
+export function isCardio(e: Pick<Equipment, "equipment_type" | "category">): boolean {
+  return e.equipment_type === "cardio" || e.category === "cardio";
+}
+
 export interface WorkoutSession {
   id: string;
   started_at: string;
@@ -86,9 +91,10 @@ export interface WorkoutSet {
   session_id: string;
   equipment_id: string;
   set_number: number;
-  weight: number;
-  reps: number;
+  weight: number | null;
+  reps: number | null;
   rest_seconds: number | null;
+  duration_seconds: number | null;
   logged_at: string;
   user_id: string | null;
 }
