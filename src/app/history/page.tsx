@@ -14,7 +14,7 @@ import {
   type Equipment,
 } from "@/lib/supabase";
 import { format } from "date-fns";
-import { Calendar, LineChart as LineChartIcon } from "lucide-react";
+import { Calendar, LineChart as LineChartIcon, Trophy } from "lucide-react";
 
 export default function HistoryPage() {
   const [sessions, setSessions] = useState<WorkoutSession[]>([]);
@@ -58,6 +58,23 @@ export default function HistoryPage() {
       : `${m}:${String(ss).padStart(2, "0")}`;
   };
 
+  // Personal record for one exercise: heaviest single set (strength) or longest
+  // single bout (cardio). Returned formatted, or null if nothing logged yet.
+  function exercisePR(eqSets: WorkoutSet[], cardio: boolean): string | null {
+    if (cardio) {
+      const longest = eqSets.reduce((m, x) => Math.max(m, x.duration_seconds ?? 0), 0);
+      return longest > 0 ? fmtClock(longest) : null;
+    }
+    const best = eqSets.reduce<WorkoutSet | null>((b, x) => {
+      if (x.weight == null) return b;
+      if (!b || x.weight > (b.weight ?? 0) || (x.weight === b.weight && (x.reps ?? 0) > (b.reps ?? 0))) {
+        return x;
+      }
+      return b;
+    }, null);
+    return best ? `${best.weight} × ${best.reps}` : null;
+  }
+
   return (
     <AppShell>
       <TopBar title="History" subtitle="Your sessions & strength progress" onRefresh={load} refreshing={loading} />
@@ -66,23 +83,35 @@ export default function HistoryPage() {
         {/* Progress charts */}
         <section>
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500 mb-3">
-            <LineChartIcon size={13} /> Strength progress
+            <LineChartIcon size={13} /> Volume trends &amp; PRs
           </div>
           {trained.length === 0 ? (
             <p className="text-sm text-slate-600">Log some sets to see progress charts.</p>
           ) : (
             <div className="grid md:grid-cols-2 gap-4">
-              {trained.map((e) => (
-                <div key={e.id} className="bg-surface-card border border-surface-border rounded-xl p-4">
-                  <Link href={`/log/${e.slug}`} className="text-sm font-semibold text-white hover:text-cmp-lime">
-                    {e.name}
-                  </Link>
-                  <ProgressChart
-                    sets={allSets.filter((s) => s.equipment_id === e.id)}
-                    mode={isCardio(e) ? "duration" : "weight"}
-                  />
-                </div>
-              ))}
+              {trained.map((e) => {
+                const eqSets = allSets.filter((s) => s.equipment_id === e.id);
+                const cardio = isCardio(e);
+                const pr = exercisePR(eqSets, cardio);
+                return (
+                  <div key={e.id} className="bg-surface-card border border-surface-border rounded-xl p-4">
+                    <div className="flex items-center justify-between gap-2">
+                      <Link href={`/log/${e.slug}`} className="text-sm font-semibold text-white hover:text-cmp-lime">
+                        {e.name}
+                      </Link>
+                      {pr && (
+                        <span
+                          className="inline-flex items-center gap-1 text-xs font-bold text-cmp-lime bg-cmp-lime/10 border border-cmp-lime/25 rounded-md px-2 py-0.5 shrink-0"
+                          title={cardio ? "Longest bout" : "Heaviest set"}
+                        >
+                          <Trophy size={11} /> {pr}
+                        </span>
+                      )}
+                    </div>
+                    <ProgressChart sets={eqSets} mode={cardio ? "duration" : "weight"} />
+                  </div>
+                );
+              })}
             </div>
           )}
         </section>

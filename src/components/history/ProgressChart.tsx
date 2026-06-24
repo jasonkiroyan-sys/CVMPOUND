@@ -12,8 +12,9 @@ import { format } from "date-fns";
 import type { WorkoutSet } from "@/lib/supabase";
 
 /**
- * Plots progress per day for one piece of equipment: the top-set weight for
- * strength machines, or the longest time (minutes) for cardio machines.
+ * Plots a daily progress trend for one piece of equipment: total training
+ * volume (weight × reps, summed across the day) for strength machines, or total
+ * time (minutes, summed) for cardio machines. `mode="weight"` = volume.
  */
 export default function ProgressChart({
   sets,
@@ -25,8 +26,9 @@ export default function ProgressChart({
   const byDay = new Map<string, number>();
   for (const s of sets) {
     const day = s.logged_at.slice(0, 10);
-    const value = mode === "duration" ? (s.duration_seconds ?? 0) / 60 : s.weight ?? 0;
-    byDay.set(day, Math.max(byDay.get(day) ?? 0, value));
+    const value =
+      mode === "duration" ? (s.duration_seconds ?? 0) / 60 : (s.weight ?? 0) * (s.reps ?? 0);
+    byDay.set(day, (byDay.get(day) ?? 0) + value);
   }
   const data = Array.from(byDay.entries())
     .sort((a, b) => a[0].localeCompare(b[0]))
@@ -37,7 +39,7 @@ export default function ProgressChart({
     }));
 
   const unit = mode === "duration" ? "min" : "lb";
-  const seriesLabel = mode === "duration" ? "Longest" : "Top set";
+  const seriesLabel = mode === "duration" ? "Total time" : "Volume";
 
   if (data.length < 2) {
     return (
