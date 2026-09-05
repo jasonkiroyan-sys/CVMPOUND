@@ -9,7 +9,7 @@ import {
   type WorkoutSet,
 } from "@/lib/supabase";
 import RestTimer from "./RestTimer";
-import { Plus, Minus, Check, Trash2, History } from "lucide-react";
+import { Plus, Minus, Check, Trash2, History, Loader2 } from "lucide-react";
 
 function fmtDuration(totalSeconds: number): string {
   const m = Math.floor(totalSeconds / 60);
@@ -41,7 +41,11 @@ export default function SetLogger({
   const [sets, setSets] = useState<WorkoutSet[]>([]);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const restElapsed = useRef(0);
+  // Mirror of sessionId that's readable synchronously inside async handlers,
+  // so a tap fired before React has re-rendered still sees the latest value.
+  const sessionRef = useRef<string | null>(null);
 
   const loadSets = useCallback(async (sid: string) => {
     const all = await getSetsForSession(sid);
@@ -50,17 +54,35 @@ export default function SetLogger({
 
   useEffect(() => {
     (async () => {
-      const session = await getOrCreateActiveSession();
-      setSessionId(session.id);
-      await loadSets(session.id);
+      try {
+        const session = await getOrCreateActiveSession();
+        sessionRef.current = session.id;
+        setSessionId(session.id);
+        await loadSets(session.id);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Couldn't load your workout session");
+      }
     })();
   }, [loadSets]);
 
+  const onRestElapsed = useCallback((e: number) => { restElapsed.current = e; }, []);
+
   async function logEntry() {
-    if (!sessionId) return;
+    if (saving) return; // ignore double-taps while a save is in flight
     if (cardio && durationMin === 0 && durationSec === 0) return;
     setSaving(true);
+    setError(null);
     try {
+      // Never discard the tap: if the session hasn't finished loading yet
+      // (slow connection), fetch/create it right now instead of bailing out.
+      let sid = sessionRef.current ?? sessionId;
+      if (!sid) {
+        const session = await getOrCreateActiveSession();
+        sid = session.id;
+        sessionRef.current = sid;
+        setSessionId(sid);
+      }
+
       const setNumber = sets.length + 1;
       const row: {
         session_id: string;
@@ -72,7 +94,7 @@ export default function SetLogger({
         rest_seconds: number | null;
       } = cardio
         ? {
-            session_id: sessionId,
+            session_id: sid,
             equipment_id: equipment.id,
             set_number: setNumber,
             weight: null,
@@ -81,7 +103,7 @@ export default function SetLogger({
             rest_seconds: null,
           }
         : {
-            session_id: sessionId,
+            session_id: sid,
             equipment_id: equipment.id,
             set_number: setNumber,
             weight,
@@ -89,18 +111,28 @@ export default function SetLogger({
             duration_seconds: null,
             rest_seconds: restElapsed.current > 0 ? restElapsed.current : null,
           };
-      const { error } = await supabase.from("workout_sets").insert(row);
-      if (error) throw error;
+
+      // Insert and get the saved row back in one round-trip, then append it
+      // locally — no second fetch, so the UI updates immediately.
+      const { data, error: insertError } = await supabase
+        .from("workout_sets")
+        .insert(row)
+        .select()
+        .single();
+      if (insertError) throw insertError;
       restElapsed.current = 0;
-      await loadSets(sessionId);
+      setSets((prev) => [...prev, data as WorkoutSet]);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Couldn't save that set — try again");
     } finally {
       setSaving(false);
     }
   }
 
   async function deleteSet(id: string) {
-    await supabase.from("workout_sets").delete().eq("id", id);
-    if (sessionId) await loadSets(sessionId);
+    const { error: delError } = await supabase.from("workout_sets").delete().eq("id", id);
+    if (delError) { setError(delError.message); return; }
+    setSets((prev) => prev.filter((s) => s.id !== id));
   }
 
   return (
@@ -122,15 +154,17 @@ export default function SetLogger({
         disabled={saving}
         className="btn-primary w-full text-base flex items-center justify-center gap-2 py-3.5"
       >
-        <Check size={18} /> {cardio ? "Log time" : `Log set ${sets.length + 1}`}
+        {saving ? <Loader2 size={18} className="animate-spin" /> : <Check size={18} />}
+        {saving ? "Saving…" : cardio ? "Log time" : `Log set ${sets.length + 1}`}
       </button>
+
+      {error && (
+        <p className="text-xs text-rose-400 text-center" role="alert">{error}</p>
+      )}
 
       {/* Rest timer is a strength-training concept — hide it for cardio. */}
       {!cardio && (
-        <RestTimer
-          defaultSeconds={90}
-          onElapsedChange={(e) => { restElapsed.current = e; }}
-        />
+        <RestTimer defaultSeconds={90} onElapsedChange={onRestElapsed} />
       )}
 
       {/* This session's entries */}

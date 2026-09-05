@@ -1,0 +1,14 @@
+{
+  "name": "CVMPOUND",
+  "short_name": "CVMPOUND",
+  "description": "Track your lifts, recognize equipment, train with an AI coach.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0d12",
+  "theme_color": "#0a0d12",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
