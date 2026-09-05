@@ -15,6 +15,7 @@ create table if not exists equipment (
   equipment_type   text not null default 'machine', -- machine|cable|free_weight|bodyweight|cardio
   photo_url        text,
   description      text,
+  settings_notes   text,                       -- per-machine settings (seat height, pin, etc.)
   weight_increment numeric not null default 5,
   is_active        boolean not null default true,
   user_id          uuid,

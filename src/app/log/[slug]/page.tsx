@@ -5,6 +5,7 @@ import Link from "next/link";
 import AppShell from "@/components/layout/AppShell";
 import TopBar from "@/components/layout/TopBar";
 import SetLogger from "@/components/log/SetLogger";
+import MachineSettings from "@/components/log/MachineSettings";
 import {
   getEquipmentBySlug,
   getSetsForEquipment,
@@ -91,6 +92,8 @@ export default function LogPage() {
                 <img src={equipment.photo_url} alt={equipment.name} className="w-full h-full object-cover" />
               </div>
             )}
+
+            <MachineSettings equipment={equipment} />
 
             {recentBest && (cardio ? recentBest.durationSeconds > 0 : true) && (
               <div className="flex items-center gap-2 text-sm bg-surface-card border border-surface-border rounded-lg px-4 py-2.5 text-slate-300">

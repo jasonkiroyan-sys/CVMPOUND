@@ -33,6 +33,7 @@ export default function AddEquipmentModal({ onClose, onSaved, existing }: Props)
     muscle_groups: existing?.muscle_groups?.join(", ") ?? "",
     weight_increment: existing?.weight_increment ?? 5,
     description: existing?.description ?? "",
+    settings_notes: existing?.settings_notes ?? "",
   });
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(existing?.photo_url ?? null);
@@ -74,6 +75,7 @@ export default function AddEquipmentModal({ onClose, onSaved, existing }: Props)
           .filter(Boolean),
         weight_increment: Number(form.weight_increment) || 5,
         description: form.description.trim() || null,
+        settings_notes: form.settings_notes.trim() || null,
         photo_url,
         is_active: true,
       };
@@ -190,6 +192,14 @@ export default function AddEquipmentModal({ onClose, onSaved, existing }: Props)
             rows={2}
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
+            className="w-full bg-surface border border-surface-border rounded-lg px-3 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cmp-lime resize-none"
+          />
+
+          <textarea
+            placeholder="Machine settings (optional) — e.g. seat height 4, back pad 3, pin at 8"
+            rows={2}
+            value={form.settings_notes}
+            onChange={(e) => setForm({ ...form, settings_notes: e.target.value })}
             className="w-full bg-surface border border-surface-border rounded-lg px-3 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cmp-lime resize-none"
           />
 

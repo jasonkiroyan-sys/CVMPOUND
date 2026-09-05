@@ -66,6 +66,7 @@ export interface Equipment {
   equipment_type: EquipmentType;
   photo_url: string | null;
   description: string | null;
+  settings_notes: string | null;
   weight_increment: number;
   is_active: boolean;
   user_id: string | null;
@@ -251,4 +252,13 @@ export async function getProgramDays(programId: string): Promise<ProgramDay[]> {
     .order("day_number", { ascending: true });
   if (error) throw error;
   return data ?? [];
+}
+
+/** Save the per-machine settings note (seat height, pin position, etc.). */
+export async function updateEquipmentNotes(id: string, notes: string | null): Promise<void> {
+  const { error } = await supabase
+    .from("equipment")
+    .update({ settings_notes: notes })
+    .eq("id", id);
+  if (error) throw error;
 }

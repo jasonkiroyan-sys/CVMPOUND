@@ -7,6 +7,7 @@ import {
   Camera,
   Brain,
   LineChart,
+  StickyNote,
   Settings,
   Menu,
   X,
@@ -18,6 +19,7 @@ const nav = [
   { label: "Recognize", href: "/recognize", icon: Camera },
   { label: "Coach", href: "/coach", icon: Brain },
   { label: "History", href: "/history", icon: LineChart },
+  { label: "Notes", href: "/notes", icon: StickyNote },
   { label: "Manage", href: "/equipment", icon: Settings },
 ];
 
