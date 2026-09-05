@@ -64,12 +64,12 @@ export default function EquipmentManagePage() {
 
         {equipment.map((e) => (
           <div key={e.id} className="flex items-center gap-3 bg-surface-card border border-surface-border rounded-xl p-3">
-            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-lg bg-surface-hover overflow-hidden flex items-center justify-center shrink-0">
+            <div className="w-24 sm:w-28 rounded-lg bg-surface-hover overflow-hidden shrink-0">
               {e.photo_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={e.photo_url} alt={e.name} className="w-full h-full object-cover" />
+                <img src={e.photo_url} alt={e.name} className="w-full h-auto block" />
               ) : (
-                <Dumbbell size={20} className="text-slate-600" />
+                <div className="aspect-square flex items-center justify-center"><Dumbbell size={20} className="text-slate-600" /></div>
               )}
             </div>
             <div className="min-w-0 flex-1">

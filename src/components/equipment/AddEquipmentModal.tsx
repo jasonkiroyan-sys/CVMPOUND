@@ -111,10 +111,10 @@ export default function AddEquipmentModal({ onClose, onSaved, existing }: Props)
         <form onSubmit={submit} className="space-y-3">
           {/* Photo */}
           <label className="block">
-            <div className="relative aspect-[4/3] rounded-lg border-2 border-dashed border-surface-border hover:border-cmp-lime cursor-pointer overflow-hidden bg-surface flex items-center justify-center">
+            <div className={`relative rounded-lg border-2 border-dashed border-surface-border hover:border-cmp-lime cursor-pointer overflow-hidden bg-surface flex items-center justify-center ${preview ? "" : "aspect-[4/3]"}`}>
               {preview ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={preview} alt="preview" className="w-full h-full object-cover" />
+                <img src={preview} alt="preview" className="w-full h-auto block" />
               ) : (
                 <div className="text-center text-slate-500">
                   <Upload size={24} className="mx-auto mb-1" />

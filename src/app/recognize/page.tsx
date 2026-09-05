@@ -92,9 +92,9 @@ export default function RecognizePage() {
             <span className="text-xs text-slate-500">Point your camera at the machine</span>
           </button>
         ) : (
-          <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-surface-hover">
+          <div className="relative rounded-2xl overflow-hidden bg-surface-hover">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={preview} alt="captured" className="w-full h-full object-cover" />
+            <img src={preview} alt="captured" className="w-full h-auto block" />
             <button
               onClick={reset}
               className="absolute top-3 right-3 p-2 rounded-lg bg-black/60 text-white hover:bg-black/80"
@@ -117,7 +117,7 @@ export default function RecognizePage() {
             <div className="flex items-center gap-3">
               {result.photoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={result.photoUrl} alt={result.name} className="w-14 h-14 rounded-lg object-cover" />
+                <img src={result.photoUrl} alt={result.name} className="w-14 h-auto rounded-lg" />
               ) : (
                 <CheckCircle2 size={28} className="text-cmp-lime" />
               )}
