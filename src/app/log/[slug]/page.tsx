@@ -87,9 +87,9 @@ export default function LogPage() {
         {equipment && (
           <>
             {equipment.photo_url && (
-              <div className="aspect-[16/9] rounded-xl overflow-hidden bg-surface-hover">
+              <div className="rounded-xl overflow-hidden bg-surface-hover">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={equipment.photo_url} alt={equipment.name} className="w-full h-full object-cover" />
+                <img src={equipment.photo_url} alt={equipment.name} className="w-full h-auto block" />
               </div>
             )}
 
